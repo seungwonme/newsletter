@@ -1,0 +1,48 @@
+[tool.poetry]
+name = "newsletter"
+version = "0.1.0"
+description = ""
+authors = ["seungwonme <seungwonan.me@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.12,<=3.13"
+crewai = "^0.86.0"
+crewai-tools = "^0.17.0"
+langchain-community = "^0.3.12"
+youtube-search = "^2.1.2"
+faiss-cpu = "^1.9.0.post1"
+python-dotenv = "^1.0.1"
+yt-dlp = "^2024.12.13"
+langgraph = "^0.2.60"
+langchain = "^0.3.13"
+markdownify = "^0.14.1"
+pre-commit = "^4.0.1"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.29.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py39']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # The following are specific to Black, you probably don't want those.
+  tests/data/
+  | profiling/
+  | scripts/generate_schema.py  # Uses match syntax
+)
+'''
+# We use the unstable style for formatting Black itself. If you
+# want bug-free formatting, you should keep this off. If you want
+# stable formatting across releases, you should also keep `preview = true`
+# (which is implied by this flag) off.
+unstable = true
+
+# Build system information and other project-specific configuration below.
+# NOTE: You don't need this in your own Black configuration.

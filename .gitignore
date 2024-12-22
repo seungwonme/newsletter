@@ -42,7 +42,7 @@ yarn-error.log*
 
 # VSCode specific files
 .vscode/ 
-tempCodeRunnerFile.* # Temporary VSCode files
+tempCodeRunnerFile.*
 
 # Git related files
 *.patch
@@ -53,5 +53,7 @@ __pycache__/
 
 # My specific files
 *.db 
-output/
 review.md
+output/
+learn/
+proposal/

@@ -11,5 +11,5 @@ poetry install
 ## Usage
 
 ```bash
-poetry run python -m src.app.py
+poetry run python -m newsletter.app
 ```

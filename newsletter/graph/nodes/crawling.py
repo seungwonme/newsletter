@@ -3,8 +3,7 @@ import re
 import os
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
-from newsletter.utils.parse import get_unique_filename
-from langchain.agents import tool
+from newsletter.graph.parse import get_unique_filename
 
 UNNECESSARY_CONTENTS = [
     "script",
@@ -32,20 +31,7 @@ UNNECESSARY_CONTENTS = [
 ]
 
 
-@tool
-def crawl_url(url):
-    """
-    Crawls the given URL and returns the cleaned content in Markdown format.
-
-    Args:
-        url (str): The URL to crawl.
-
-    Returns:
-        str: The cleaned content of the URL in Markdown format. If an error occurs, returns an empty string.
-
-    Raises:
-        requests.exceptions.RequestException: If there is an issue with the HTTP request.
-    """
+def crawl_url(url) -> str:
     try:
         response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
         response.raise_for_status()
@@ -69,6 +55,26 @@ def crawl_url(url):
     cleaned_text = re.sub(r"\n{3,}", "\n\n", cleaned_text)
 
     return cleaned_text
+
+
+from newsletter.graph.state import WorkflowState
+
+
+def crawling_node(state: WorkflowState):
+    """
+    Crawls the URL in the state and returns the cleaned content in Markdown format.
+
+    Args:
+        state (WorkflowState): The current state of the workflow.
+
+    Returns:
+        dict: The updated state with the cleaned content in Markdown format.
+    """
+    url = state["urls"].pop(0)
+    cleaned_text = crawl_url(url)
+    new_search_result = state["search_result"] + cleaned_text
+    print(new_search_result)
+    return {"search_result": new_search_result}
 
 
 import sys

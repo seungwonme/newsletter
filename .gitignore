@@ -38,7 +38,11 @@ yarn-error.log*
 .pnpm-debug.log* 
 
 # Environment files
-.env*
+.env
+.env.local*
+.env.test*
+.env.development*
+.env.production*
 
 # VSCode specific files
 .vscode/ 
@@ -53,7 +57,9 @@ __pycache__/
 
 # My specific files
 *.db 
-review.md
 output/
 learn/
 proposal/
+prompts/
+review.md
+workflow.png

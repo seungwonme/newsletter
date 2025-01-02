@@ -1,1 +1,107 @@
-First, independently design a solution focusing on clean, maintainable, and efficient code by considering clarity, reusability, performance, testability, and security. Then, analyze and refine your solution step by step, ensuring it adheres to coding standards and is easy to collaborate on. Finally, review your solution in the context of real-world scenarios, assessing its scalability, maintainability, and adaptability over time. Always answer in Korean.
+# Newsletter Generator PRD (Product Requirements Document)
+
+## 1. 개요
+
+### 1.1 제품 목적
+
+Newsletter Generator는 사용자가 제공한 주제에 대해 자동으로 관련 정보를 수집하고 고품질의 뉴스레터를 생성하는 AI 기반 도구입니다. 이 도구는 콘텐츠 큐레이션, 정보 가공, 그리고 일관된 형식의 뉴스레터 작성 과정을 자동화하여 사용자의 시간과 노력을 절약합니다.
+
+### 1.2 목표 사용자
+
+- 뉴스레터 작성자 및 에디터
+- 콘텐츠 마케터
+- 트렌드 리서처
+- 정기적으로 특정 주제에 대한 정보를 수집하고 공유해야 하는 전문가
+
+## 2. 핵심 기능
+
+### 2.1 정보 수집
+
+- **웹 검색**
+  - Tavily API를 통한 관련 웹페이지 자동 검색
+  - 검색당 최대 20개의 관련 URL 수집
+  - 검색어 최적화를 통한 정확한 정보 수집
+- **콘텐츠 크롤링**
+  - 수집된 URL의 웹페이지 콘텐츠 자동 추출
+  - 불필요한 요소 제거 및 핵심 콘텐츠 추출
+  - 다양한 웹사이트 형식 지원
+
+### 2.2 콘텐츠 생성
+
+- **자동 뉴스레터 작성**
+  - 수집된 정보를 바탕으로 구조화된 뉴스레터 생성
+  - 일관된 형식과 톤앤매너 유지
+  - 한국어 최적화된 콘텐츠 생성
+- **품질 관리**
+  - AI 기반 품질 검증 시스템
+  - 불충분한 품질의 경우 자동 재생성 (최대 3회)
+
+### 2.3 결과물 관리
+
+- **자동 저장**
+  - 생성된 뉴스레터 자동 저장
+  - 고유 파일명을 통한 버전 관리
+  - 이전 결과물 보존
+
+## 3. 기술 요구사항
+
+### 3.1 시스템 요구사항
+
+- Python 3.12 이상
+- Poetry 패키지 관리자
+- 안정적인 인터넷 연결
+
+### 3.2 의존성
+
+- LangChain, LangGraph
+- OpenAI GPT-4
+- Tavily API
+- 기타 필요한 Python 패키지
+
+## 4. 사용자 경험
+
+### 4.1 사용 흐름
+
+1. 검색어/주제 입력
+2. 자동 정보 수집 및 가공
+3. 뉴스레터 초안 생성
+4. 품질 검증 및 필요시 재생성
+5. 최종 결과물 저장
+
+### 4.2 입력 요구사항
+
+- 명확한 검색어 또는 주제
+- API 키 설정 (최초 1회)
+
+### 4.3 출력 형식
+
+- 마크다운 형식의 뉴스레터
+- 참고 자료 URL 포함
+- UTF-8 인코딩
+
+## 5. 성공 기준
+
+- 사용자 입력 대비 높은 품질의 뉴스레터 생성
+- 일관된 형식과 구조 유지
+- 신뢰할 수 있는 정보 수집 및 인용
+- 효율적인 처리 시간
+- 안정적인 시스템 운영
+
+---
+
+## 코드 설명 룰
+
+1. 코드에 대한 설명은 langgraph 워크플로우의 순서를 따라가며 설명하세요.
+   예를 들어 아래의 코드를 설명할 때 다음과 같은 순서로 설명합니다.
+
+   > `plus_node`는 `a` 상태의 값을 1 증가시키는 노드입니다.
+
+   ```py
+   def plus_node(state):
+       state["a"] += 1
+       return state
+   ```
+
+2. `====<함수명>====` 형태를 지닌 출력은 디버그를 위한 출력이니 설명에서 제외하세요.
+
+3. 이미 docstring이 있는 함수의 경우 docstring을 제외한 내용만 설명하세요.

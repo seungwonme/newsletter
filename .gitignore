@@ -182,7 +182,7 @@ cython_debug/
 *.pem
 
 # VSCode specific files
-.vscode/ 
+.vscode/
 tempCodeRunnerFile.*
 
 # Git related files
@@ -190,12 +190,13 @@ tempCodeRunnerFile.*
 
 # Python specific files
 .venv
-__pycache__/ 
+__pycache__/
 
 # My specific files
-*.db 
+*.db
 output/
 learn/
 proposal/
 review.md
 workflow.png
+pbr.md

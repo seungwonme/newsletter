@@ -1,33 +1,53 @@
 from tavily import TavilyClient
+from langchain_openai import ChatOpenAI
 from newsletter.graph.state import WorkflowState
 import os
 
+
+llm = ChatOpenAI(model="gpt-4o-mini")
 tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
 
-def get_search_results(response) -> tuple[str, list[str]]:
+def _get_raw_contents(response) -> tuple[list[str], list[str]]:
+    raw_contents = []
     urls = []
-    full_content = f"{response["answer"]}\n\n"
     for result in response["results"]:
-        full_content += f"title: {result['title']}\n"
-        full_content += f"content: {result['content']}\n\n"
-        urls.append(result["url"])
-    return full_content, urls
+        if result.get("raw_content"):
+            raw_contents.append(result["raw_content"])
+        if result.get("url"):
+            urls.append(result["url"])
+
+    return raw_contents, urls
 
 
 def search_node(state: WorkflowState):
     response = tavily.search(
-        query=state["search_terms"][-1], max_results=5, include_answer=True
+        query=state["search_queries"][-1],
+        max_results=10,
+        include_answer=False,
+        include_raw_content=True,
     )
-    result, urls = get_search_results(response)
+
+    raw_contents, urls = _get_raw_contents(response)
+
     print("====================search_node====================")
-    print(result)
+    for idx, content in enumerate(raw_contents):
+        print(
+            f"search_results[{idx}]:"
+            f" {content[:100] + '...' if len(content) > 100 else content}"
+        )
 
-    new_search_result = (
-        state["search_result"] + "\n\n" + result
-        if len(state["search_result"]) > 0
-        else result
+    return {"search_results": raw_contents, "search_urls": urls}
+
+
+from newsletter.graph.state import WorkflowState, initialize_state
+
+
+if __name__ == "__main__":
+    state = WorkflowState(
+        initialize_state(
+            "Tell me about the DOGE (Department of Government Efficiency) department in"
+            " the United States led by Elon Musk."
+        )
     )
-    new_urls = state["urls"] + urls
-
-    return {"search_result": new_search_result, "urls": new_urls}
+    search_node(state)

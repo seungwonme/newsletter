@@ -3,7 +3,6 @@ import re
 import os
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
-from newsletter.graph.parse import get_unique_filename
 
 UNNECESSARY_CONTENTS = [
     "script",
@@ -31,7 +30,7 @@ UNNECESSARY_CONTENTS = [
 ]
 
 
-def crawl_url(url) -> str:
+def _get_content_from_url(url) -> str:
     try:
         response = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
         response.raise_for_status()
@@ -61,44 +60,46 @@ from newsletter.graph.state import WorkflowState
 
 
 def crawling_node(state: WorkflowState):
-    """
-    Crawls the URL in the state and returns the cleaned content in Markdown format.
+    new_search_result = state["search_result"]
+    while len(state["urls"]) > 0:
+        url = state["urls"].pop(0)
+        content = _get_content_from_url(url)
+        new_search_result = (
+            state["search_result"] + "\n" + content
+            if len(new_search_result) > 0
+            else content
+        )
 
-    Args:
-        state (WorkflowState): The current state of the workflow.
-
-    Returns:
-        dict: The updated state with the cleaned content in Markdown format.
-    """
-    url = state["urls"].pop(0)
-    cleaned_text = crawl_url(url)
-    new_search_result = state["search_result"] + cleaned_text
+    print("====================crawling_node====================")
     print(new_search_result)
-    return {"search_result": new_search_result}
+
+    return {"search_result": new_search_result, "urls": []}
 
 
 import sys
 from urllib.parse import urlparse  # 호스트네임 추출을 위한 모듈 추가
+from newsletter.graph.parse import get_unique_filename
 
 
 if __name__ == "__main__":
     url = sys.argv[1]
-    cleaned_text = crawl_url(url)
+    content = _get_content_from_url(url)
 
     # URL의 호스트네임 추출
     parsed_url = urlparse(url)
     hostname = parsed_url.hostname
 
     # 결과 파일 저장
-    os.makedirs("output", exist_ok=True)
+    os.makedirs("/Users/anseungwon/dev/easolve/newsletter/output", exist_ok=True)
 
     # 고유한 파일명 생성
     output_file = get_unique_filename("output", hostname, "md")
 
     with open(output_file, "w", encoding="utf-8") as file:
         file.write(f"[{hostname}]({url})\n\n")
-        file.write(cleaned_text)
+        file.write(content)
 
     print(
-        f"콘텐츠가 파일에 저장되었습니다: ~/.dotfiles/scripts/html_to_md/{output_file}"
+        "콘텐츠가 파일에 저장되었습니다:"
+        f" /Users/anseungwon/dev/easolve/newsletter/{output_file}"
     )

@@ -11,7 +11,7 @@ if __name__ == "__main__":
     if len(argv) == 1:
         print("Usage: python app.py <search_query>")
         sys.exit(0)
-    state = WorkflowState(initialize_state(argv[1], remaining_loops=2))
+    state = WorkflowState(initialize_state(argv[1], remaining_loops=1))
     res = graph.invoke(state, {"recursion_limit": 100})
     print("--------------------------------------")
     print(res["intent_of_requested_content"])
@@ -21,4 +21,4 @@ if __name__ == "__main__":
     filename = get_unique_filename(f"{current_directory}/output", "newsletter")
 
     with open(filename, "w", encoding="utf-8") as f:
-        f.write(res["newsletter_content"][-1])
+        f.write(res["newsletter_contents"][-1])

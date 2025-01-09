@@ -23,7 +23,7 @@ def _get_raw_contents(response) -> tuple[list[str], list[str]]:
 def search_node(state: WorkflowState):
     response = tavily.search(
         query=state["search_queries"][-1],
-        max_results=10,
+        max_results=5,
         include_answer=False,
         include_raw_content=True,
     )

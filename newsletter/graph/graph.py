@@ -18,21 +18,21 @@ def get_graph() -> CompiledStateGraph:
     builder.add_node("search", search_node)
     builder.add_node("summarizer", summarizer_node)
     builder.add_node("create_newsletter", creator_node)
-    builder.add_node("confirm_newsletter", confirm_node)
+    # builder.add_node("confirm_newsletter", confirm_node)
 
     # 엣지 추가
     builder.add_edge(START, "search_optimizer")
     builder.add_edge("search_optimizer", "search")
     builder.add_edge("search", "summarizer")
     builder.add_edge("summarizer", "create_newsletter")
-    builder.add_edge("create_newsletter", "confirm_newsletter")
+    builder.add_edge("create_newsletter", END)
 
-    def review_condition(state: WorkflowState):
-        return END if state["is_approved"] else "search"
+    # def review_condition(state: WorkflowState):
+    #     return END if state["is_approved"] else "search"
 
-    builder.add_conditional_edges(
-        "confirm_newsletter", review_condition, [END, "search"]
-    )
+    # builder.add_conditional_edges(
+    #     "confirm_newsletter", review_condition, [END, "search"]
+    # )
 
     graph = builder.compile()
 

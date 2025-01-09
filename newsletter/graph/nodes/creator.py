@@ -15,15 +15,17 @@ def _make_prompt_vars(state: WorkflowState) -> dict:
         original_content += f"ORIGINAL_CONTENT_{i + 1}:\n{content}\n"
 
     example = f"""
-EXAMPLE_1:
+EXAMPLE:
 {POST_1}
+"""
 
+    """
+...
 EXAMPLE_2:
 {POST_2}
 
 EXAMPLE_3:
 {POST_3}
-
 """
 
     intent_of_requested_content = state["intent_of_requested_content"]

@@ -37,7 +37,10 @@ def summarizer_node(state: WorkflowState):
 
     while len(state["search_results"]) > 0:
         summary_dict["original_content"] = state["search_results"].pop(0)
-        summary_content = _summarize_content(summary_dict)
+        if len(summary_dict["original_content"]) > 5000:
+            summary_content = _summarize_content(summary_dict)
+        else:
+            summary_content = summary_dict["original_content"]
         if summary_content:
             new_summary_contents.append(summary_content)
 

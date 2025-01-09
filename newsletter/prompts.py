@@ -3,11 +3,24 @@ from langchain_core.prompts import PromptTemplate
 QUERY_OPTIMIZATION_PROMPT = PromptTemplate.from_template(
     """You're an experienced newsletter editor. Your boss, who doesn't know much about newsletters, says '{search_query}'.
 You should write a newsletter based on what your boss said.
+Infer the country based on the language used by your boss, consider the background of that country, and understand the context of what your boss said.
 
 In 'intent_of_requested_content', make a guess about what your boss wants you to write in the newsletter based on what he or she said.
 In 'optimized_search_query', enter the search terms you would search on Google to create that newsletter.
 
-Give all answers in English.
+- Today is {current_date}. Set 'optimized_search_query' to return the most recent search results possible.
+- Give all answers in English.
+"""
+)
+
+SUMMARIZER_PROMPT = PromptTemplate.from_template(
+    """You're an expert at summarizing complex information.  When others see your summaries, they understand them as well as if they had read the full text.
+check if the original content is relevant to '{intent_of_requested_content}'.
+- if it is relevant, provide a true for 'is_related' and a summary for 'summary'.
+- if it is not relevant, give false to 'is_related'.
+
+Original content:
+{original_content}
 """
 )
 
@@ -35,17 +48,6 @@ CHIEF_EDITOR_PROMPT = PromptTemplate.from_template(
 
 Newsletter:
 {newsletter_content}
-"""
-)
-
-SUMMARIZER_PROMPT = PromptTemplate.from_template(
-    """You're an expert at summarizing complex information.  When others see your summaries, they understand them as well as if they had read the full text.
-check if the original content is relevant to '{intent_of_requested_content}'.
-- if it is relevant, provide a true for 'is_related' and a summary for 'summary'.
-- if it is not relevant, give false to 'is_related'.
-
-Original content:
-{original_content}
 """
 )
 

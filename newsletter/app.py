@@ -10,7 +10,7 @@ if __name__ == "__main__":
     argv = sys.argv
     if len(argv) == 1:
         print("Usage: python app.py <search_query>")
-        sys.exit(0)
+        sys.exit(1)
     state = WorkflowState(initialize_state(argv[1], remaining_loops=1))
     res = graph.invoke(state, {"recursion_limit": 100})
     print("--------------------------------------")

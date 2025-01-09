@@ -2,6 +2,7 @@ from langchain_openai import ChatOpenAI
 from newsletter.graph.state import WorkflowState
 from newsletter.prompts import QUERY_OPTIMIZATION_PROMPT
 from pydantic import BaseModel
+import datetime
 import json
 
 
@@ -14,7 +15,10 @@ class _OptimizeSearchQuery(BaseModel):
 
 
 def search_optimizer_node(state: WorkflowState):
-    prompt = QUERY_OPTIMIZATION_PROMPT.format(search_query=state["search_queries"][0])
+    prompt = QUERY_OPTIMIZATION_PROMPT.format(
+        search_query=state["search_queries"][0],
+        current_date=datetime.datetime.now(),
+    )
     response = llm.bind_tools([_OptimizeSearchQuery]).invoke(prompt)
     arguments = json.loads(
         response.additional_kwargs["tool_calls"][0]["function"]["arguments"]

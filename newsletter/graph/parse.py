@@ -14,6 +14,8 @@ def get_unique_filename(directory, base_filename, extension="md"):
     Returns:
         str: A unique file path with the given base filename and extension.
     """
+    if not os.path.exists(directory):
+        os.makedirs(directory)
     if not directory.endswith("/"):
         directory += "/"
     file_path = os.path.join(directory, f"{base_filename}.{extension}")

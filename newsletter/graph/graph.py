@@ -5,7 +5,7 @@ from newsletter.graph.visualize import save_graph_as_png, display_graph
 from newsletter.graph.nodes.search_optimizer import search_optimizer_node
 from newsletter.graph.nodes.search import search_node
 from newsletter.graph.nodes.summary import summarizer_node
-from newsletter.graph.nodes.creator import creator_node
+from newsletter.graph.nodes.generator import generator_node
 from newsletter.graph.nodes.confirm import confirm_node
 
 
@@ -17,15 +17,15 @@ def get_graph() -> CompiledStateGraph:
     builder.add_node("search_optimizer", search_optimizer_node)
     builder.add_node("search", search_node)
     builder.add_node("summarizer", summarizer_node)
-    builder.add_node("create_newsletter", creator_node)
+    builder.add_node("generator", generator_node)
     # builder.add_node("confirm_newsletter", confirm_node)
 
     # 엣지 추가
     builder.add_edge(START, "search_optimizer")
     builder.add_edge("search_optimizer", "search")
     builder.add_edge("search", "summarizer")
-    builder.add_edge("summarizer", "create_newsletter")
-    builder.add_edge("create_newsletter", END)
+    builder.add_edge("summarizer", "generator")
+    builder.add_edge("generator", END)
 
     # def review_condition(state: WorkflowState):
     #     return END if state["is_approved"] else "search"

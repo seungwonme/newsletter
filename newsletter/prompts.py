@@ -1,44 +1,9 @@
 from langchain_core.prompts import PromptTemplate
+from langchain import hub
 
-QUERY_OPTIMIZATION_PROMPT = PromptTemplate.from_template(
-    """You're an experienced newsletter editor. Your boss, who doesn't know much about newsletters, says '{search_query}'.
-You should write a newsletter based on what your boss said.
-Infer the country based on the language used by your boss, consider the background of that country, and understand the context of what your boss said.
-
-In 'intent_of_requested_content', make a guess about what your boss wants you to write in the newsletter based on what he or she said.
-In 'optimized_search_query', enter the search terms you would search on Google to create that newsletter.
-
-- Today is {current_date}. Set 'optimized_search_query' to return the most recent search results possible.
-- Give all answers in English.
-"""
-)
-
-SUMMARIZER_PROMPT = PromptTemplate.from_template(
-    """You're an expert at summarizing complex information.  When others see your summaries, they understand them as well as if they had read the full text.
-check if the original content is relevant to '{intent_of_requested_content}'.
-- if it is relevant, provide a true for 'is_related' and a summary for 'summary'.
-- if it is not relevant, give false to 'is_related'.
-
-Original content:
-{original_content}
-"""
-)
-
-CREATOR_PROMPT = PromptTemplate.from_template(
-    """You are a competent senior newsletter author.
-Create a new newsletter using the 'ORIGINAL_CONTENTS' and 'PREV_CREATED_NEWS_LETTERS' below.
-1. The format of a new newsletter should follow the template in 'EXAMPLES' below.
-2. The new newsletter should be written with the following intentions: '{intent_of_requested_content}'
-3. The new newsletter should contain more content than 'PREV_CREATED_NEWS_LETTERS' or be of higher quality.
-4. The new newsletter must be written in Korean.
-
-{original_content}
-
-{example}
-
-New Newsletter:
-"""
-)
+QUERY_OPTIMIZATION_PROMPT = hub.pull("aidenme/query_optimizer")
+SUMMARIZER_PROMPT = hub.pull("aidenme/summarizer")
+GENERATOR_PROMPT = hub.pull("aidenme/newsletter_gerenerator")
 
 CHIEF_EDITOR_PROMPT = PromptTemplate.from_template(
     """You are the general manager of a professional newsletter. Check the content of your newsletter below.

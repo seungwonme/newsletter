@@ -16,15 +16,11 @@
 # Allowed `<type>`
 # feat (feature): 새로운 기능 추가
 # fix (bug fix): 버그 수정
-# refactor: 기능 변경 없이 코드 구조 변경
-# chore (maintain): 빌드, 패키지 매니저 설정 등 코드 수정이 없는 작업
-# style (formatting, missing semi colons, …): 코드 스타일 변경
-# build (npm, yarn, ...): 빌드 시스템 또는 외부 종속성 변경
+# docs (documentation): 문서 작업
+# style (formatting, missing semi colons, …): 코드 스타일 수정
+# refactor: 기능 변경 없이 코드 구조 개선
 # test (when adding missing tests): 테스트 코드 추가 또는 기존 테스트 수정
-# docs (documentation): 문서 수정
-# ci: CI 구성파일 및 스크립트 변경
-# perf (performance): 성능 개선
-# revert: 이전 커밋 되돌리기
+# chore (maintain): 빌드, 패키지 매니저 설정 등 코드 수정이 없는 작업
 
 # Allowed `<scope>`
 # Scope could be anything specifying place of the commit change. For example $location, $browser, $compile, $rootScope, ngHref, ngClick, ngView, etc...

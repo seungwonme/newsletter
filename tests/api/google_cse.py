@@ -1,15 +1,28 @@
 # https://gomgomi.github.io/web/scrap-using-google-google-cse/
 # https://developers.google.com/custom-search/v1/overview?hl=ko
 
-import requests
+import os
 
-from tests.api.utils import save_text_to_unique_file
+import requests
+from dotenv import load_dotenv
+
+from tests.utils import save_text_to_unique_file
+
+load_dotenv()
 
 
 def main():
-    url = "https://www.google.com/search"
-    query = "?q=economy site:cnn.com after:2025-02-17"
-    response = requests.get(url + query)
+    api_key = os.getenv("GOOGLE_CSE_API_KEY")
+    cx = os.getenv("GOOGLE_CSE_ID")
+    url = "https://customsearch.googleapis.com/customsearch/v1"
+    query = "economy site:cnn.com after:2025-02-17"
+    params = {
+        "key": api_key,
+        "cx": cx,
+        "q": query,
+    }
+
+    response = requests.get(url, params=params)
 
     if response.status_code == 200:
         print("Request was successful")
@@ -20,5 +33,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-# https://developers.google.com/custom-search/v1/overview?hl=ko

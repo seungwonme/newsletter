@@ -1,0 +1,35 @@
+name,url
+google news,https://news.google.com/rss/
+yahoo news,https://news.yahoo.com/rss/
+new york times,https://www.nytimes.com/rss/
+bbc,https://www.bbc.co.uk/news/10628494
+bloomberg,https://feeds.bloomberg.com/news.rss
+reuters,https://ir.thomsonreuters.com/rss-feeds
+wall street journal,https://www.wsj.com/news/rss-news-and-feeds
+fox news,https://www.foxnews.com/story/foxnews-com-rss-feeds
+washington post,https://www.washingtonpost.com/discussions/2018/10/12/washington-post-rss-feeds/
+vox,https://www.vox.com/rss/index.xml
+huffington post,https://support.itesmedia.tv/flux-rss-disponibles
+abc,https://abcnews.go.com/Site/page/rss-feeds-3520115
+marketwatch,https://www.marketwatch.com/site/rss
+new yorker,https://www.newyorker.com/about/feeds
+daily mail,https://www.dailymail.co.uk/home/rssMenu.html
+sbs,https://news.sbs.co.kr/news/rss.do
+jtbc,https://news.jtbc.co.kr/rss
+조선일보,https://rssplus.chosun.com/
+동아일보,https://rss.donga.com/
+매일경제,https://www.mk.co.kr/rss/
+한국경제,https://www.hankyung.com/feed/
+경향신문,https://www.khan.co.kr/help/help_rss.html
+한겨레,http://2012vote.hani.co.kr/arti/RSS/
+뉴시스,https://www.newsis.com/RSS/
+머니투데이,https://news.mt.co.kr/mtm/mtm_newspaper.htm
+연합뉴스,https://www.yonhapnewstv.co.kr/add/rss
+프레시안,https://www.pressian.com/rss
+통일뉴스,https://www.tongilnews.com/rssIndex.html
+Able,https://www.ablenews.co.kr/rssIndex.html
+시사저널,https://www.sisajournal.com/rssIndex.html
+세계일보,https://www.segye.com/rssInfo
+미디어오늘,https://www.mediatoday.co.kr/rssIndex.html
+동아일보,https://rss.donga.com/
+국민일보,https://www.kmib.co.kr/rss/

@@ -133,6 +133,7 @@ disable=R,
         C0115, # missing-class-docstring
         W0718, # broad-exception-caught
         C0301, # line-too-long
+        W1405, # inconsistent-quotes
 
 
 [REPORTS]

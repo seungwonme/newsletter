@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from newsdataapi import NewsDataApiClient
 
-from tests.api.utils import save_text_to_unique_file
+from tests.utils import save_text_to_unique_file
 
 load_dotenv()
 
@@ -35,7 +35,7 @@ def parse_and_save_news_data(response: dict):
         parsed_articles.append(parsed_article)
 
     save_text_to_unique_file(
-        json.dumps(parsed_articles, indent=4, ensure_ascii=False), "output", "news_data.json"
+        json.dumps(parsed_articles, indent=4, ensure_ascii=False), file_name="news_data.json"
     )
 
 

@@ -7,7 +7,7 @@ import os
 from dotenv import load_dotenv
 from langchain_community.document_loaders.firecrawl import FireCrawlLoader
 
-from tests.api.utils import save_docs_to_unique_file
+from tests.utils import save_docs_to_unique_file
 
 load_dotenv()
 

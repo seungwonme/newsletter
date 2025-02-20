@@ -2,7 +2,7 @@ import asyncio
 
 from crawl4ai import AsyncWebCrawler
 
-from tests.api.utils import save_text_to_unique_file
+from tests.utils import save_text_to_unique_file
 
 
 async def main():

@@ -4,7 +4,8 @@ import os
 
 import requests
 from dotenv import load_dotenv
-from utils import save_text_to_unique_file
+
+from tests.utils import save_text_to_unique_file
 
 # Load environment variables
 load_dotenv()
@@ -42,8 +43,7 @@ def parse_and_save_news_data(response: dict):
     # JSON 형식으로 저장 (한글 지원)
     save_text_to_unique_file(
         json.dumps(formatted_data, indent=4, ensure_ascii=False),
-        "output",
-        "kakao_search_results.json",
+        file_name="kakao_search_results.json",
     )
 
 

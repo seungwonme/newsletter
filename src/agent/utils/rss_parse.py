@@ -41,8 +41,9 @@ def load_rss_feeds(csv_path: str) -> Optional[List[Dict[str, str]]]:
                 feeds.append(
                     {
                         "publisher": row["publisher"].strip(),
-                        "category": row["category"].strip(),
                         "url": row["url"].strip(),
+                        "category": row["category"].strip(),
+                        "rss_url": row["rss_url"].strip(),
                     }
                 )
 
@@ -213,12 +214,12 @@ def main():
         #         continue
         feed = feeds[0]
         try:
-            xml_content = fetch_feed(feed["url"])
+            xml_content = fetch_feed(feed["rss_url"])
             news_items = parse_feed(xml_content)
             news_content = format_news_content(news_items, feed["publisher"], feed["category"])
             all_news_content += news_content
         except (requests.RequestException, ET.ParseError) as e:
-            print(f"Error processing feed {feed['url']}: {e}")
+            print(f"Error processing feed {feed['rss_url']}: {e}")
 
         if all_news_content:
             save_text_to_unique_file(

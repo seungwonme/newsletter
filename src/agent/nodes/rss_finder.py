@@ -1,6 +1,9 @@
-# pylint: disable=W0613, W0611
+# flake8: noqa
+# pylint: disable=W0613,W0611
 
-from src.agent.utils.rss_parse import (  # noqa: F401
+from langchain_openai import ChatOpenAI
+
+from src.agent.utils.rss_parse import (
     fetch_feed,
     format_news_content,
     load_rss_feeds,

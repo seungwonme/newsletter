@@ -117,13 +117,12 @@ def parse(response):
 #         f.write("url: " + tool_message.get("url") + "\n")
 #         f.write("content: " + tool_message.get("content") + "\n")
 
-from langchain_core.messages import HumanMessage, ToolMessage, AIMessage
+# pylint: disable=C0413
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage  # noqa: E402
 
 
 def custom_serializer(obj):
     """JSON으로 직렬화할 수 없는 객체를 딕셔너리로 변환"""
-    if hasattr(obj, "__dict__") or isinstance(
-        obj, (HumanMessage, AIMessage, ToolMessage)
-    ):
+    if hasattr(obj, "__dict__") or isinstance(obj, (HumanMessage, AIMessage, ToolMessage)):
         return obj.__dict__  # 객체의 __dict__ 속성을 반환 (모든 속성을 딕셔너리로 변환)
     return str(obj)  # 그 외의 객체는 문자열로 변환

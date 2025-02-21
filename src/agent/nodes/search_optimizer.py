@@ -1,10 +1,11 @@
-from langchain_openai import ChatOpenAI
-from newsletter.graph.state import WorkflowState
-from newsletter.prompts import QUERY_OPTIMIZATION_PROMPT
-from pydantic import BaseModel
 import datetime
 import json
 
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
+
+from src.agent.utils.prompts import QUERY_OPTIMIZATION_PROMPT
+from src.agent.utils.state import WorkflowState
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
@@ -20,9 +21,7 @@ def search_optimizer_node(state: WorkflowState):
         current_date=datetime.datetime.now(),
     )
     response = llm.bind_tools([_OptimizeSearchQuery]).invoke(prompt)
-    arguments = json.loads(
-        response.additional_kwargs["tool_calls"][0]["function"]["arguments"]
-    )
+    arguments = json.loads(response.additional_kwargs["tool_calls"][0]["function"]["arguments"])
 
     intent_of_requested_content = arguments.get("intent_of_requested_content", "")
     optimized_search_query = arguments.get("optimized_search_query", "")
@@ -39,13 +38,16 @@ def search_optimizer_node(state: WorkflowState):
     }
 
 
-from newsletter.graph.state import WorkflowState, initialize_state
+# pylint: disable=C0413, W0404
+from src.agent.utils.state import initialize_state  # noqa: E402
 
 if __name__ == "__main__":
     state = WorkflowState(
         initialize_state(
-            "Tell me about the DOGE (Department of Government Efficiency) department in"
-            " the United States led by Elon Musk."
+            search_queries=[
+                "Tell me about the DOGE (Department of Government Efficiency) department in"
+                " the United States led by Elon Musk."
+            ]
         )
     )
     search_optimizer_node(state)

@@ -7,7 +7,7 @@ from typing import Dict, List, NoReturn, Optional
 import pytz
 import requests
 
-from tests.utils import save_text_to_unique_file
+from src.agent.utils.file_utils import save_text_to_unique_file
 
 
 def load_rss_feeds(csv_path: str) -> Optional[List[Dict[str, str]]]:

@@ -1,9 +1,11 @@
 from langchain_openai import ChatOpenAI
-from newsletter.graph.state import WorkflowState
-from newsletter.prompts import GENERATOR_PROMPT, POST_1, POST_2, POST_3
 
+from src.agent.utils.prompts import GENERATOR_PROMPT, POST_1
+from src.agent.utils.state import WorkflowState
 
 llm = ChatOpenAI(model="gpt-4o-mini")
+
+# pylint: disable=W0105, W0622
 
 
 def _make_prompt_vars(state: WorkflowState) -> dict:

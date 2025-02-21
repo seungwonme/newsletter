@@ -1,5 +1,5 @@
-from langchain_core.prompts import PromptTemplate
 from langchain import hub
+from langchain_core.prompts import PromptTemplate
 
 QUERY_OPTIMIZATION_PROMPT = hub.pull("aidenme/query_optimizer")
 SUMMARIZER_PROMPT = hub.pull("aidenme/summarizer")

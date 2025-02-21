@@ -1,6 +1,7 @@
-import requests
-import re
 import os
+import re
+
+import requests
 from bs4 import BeautifulSoup
 from markdownify import markdownify as md
 
@@ -29,6 +30,8 @@ UNNECESSARY_CONTENTS = [
     "meter",
 ]
 
+# pylint: disable=C0413, E0602, W0621
+
 
 def _get_content_from_url(url) -> str:
     try:
@@ -56,7 +59,7 @@ def _get_content_from_url(url) -> str:
     return cleaned_text
 
 
-from newsletter.graph.state import WorkflowState
+from src.agent.utils.state import WorkflowState  # noqa: E402
 
 
 def crawling_node(state: WorkflowState):
@@ -65,9 +68,7 @@ def crawling_node(state: WorkflowState):
         url = state["urls"].pop(0)
         content = _get_content_from_url(url)
         new_search_result = (
-            state["search_result"] + "\n" + content
-            if len(new_search_result) > 0
-            else content
+            state["search_result"] + "\n" + content if len(new_search_result) > 0 else content
         )
 
     print("====================crawling_node====================")
@@ -76,10 +77,14 @@ def crawling_node(state: WorkflowState):
     return {"search_result": new_search_result, "urls": []}
 
 
-import sys
-from urllib.parse import urlparse  # 호스트네임 추출을 위한 모듈 추가
-from newsletter.graph.parse import get_unique_filename
+# flake8: noqa
+# pylint: disable=C0413
 
+
+import sys  # noqa: E402
+from urllib.parse import urlparse  # noqa: E402
+
+from src.agent.utils.parse import get_unique_filename  # noqa: E402
 
 if __name__ == "__main__":
     url = sys.argv[1]
@@ -100,6 +105,5 @@ if __name__ == "__main__":
         file.write(content)
 
     print(
-        "콘텐츠가 파일에 저장되었습니다:"
-        f" /Users/anseungwon/dev/easolve/newsletter/{output_file}"
+        "콘텐츠가 파일에 저장되었습니다:" f" /Users/anseungwon/dev/easolve/newsletter/{output_file}"
     )

@@ -1,9 +1,10 @@
-from langchain_openai import ChatOpenAI
-from newsletter.graph.state import WorkflowState
-from newsletter.prompts import CHIEF_EDITOR_PROMPT
-from pydantic import BaseModel
 import json
 
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
+
+from src.agent.utils.prompts import CHIEF_EDITOR_PROMPT
+from src.agent.utils.state import WorkflowState
 
 llm = ChatOpenAI(model="gpt-4o-mini")
 
@@ -22,21 +23,20 @@ def _make_prompt_vars(state: WorkflowState) -> dict:
     }
 
 
-def confirm_node(state: WorkflowState):
+# pylint: disable=W0622
+
+
+def critique_node(state: WorkflowState):
     vars = _make_prompt_vars(state)
     prompt = CHIEF_EDITOR_PROMPT.format(**vars)
 
     response = llm.bind_tools([_ConfirmResponse]).invoke(prompt)
-    arguments = json.loads(
-        response.additional_kwargs["tool_calls"][0]["function"]["arguments"]
-    )
+    arguments = json.loads(response.additional_kwargs["tool_calls"][0]["function"]["arguments"])
 
-    print("====================confirm_node====================")
+    print("====================critique_node====================")
     print(arguments)
 
-    new_is_approved = (
-        arguments.get("is_approved", True) if state["remaining_loops"] > 0 else True
-    )
+    new_is_approved = arguments.get("is_approved", True) if state["remaining_loops"] > 0 else True
     new_search_query = arguments.get("new_search_query", "")
     new_search_queries = state["search_queries"]
     if new_search_query:

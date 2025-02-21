@@ -12,6 +12,7 @@ dependencies = [
     "langchain-openai>=0.3.6",
     "langgraph>=0.2.74",
     "markdownify>=0.14.1",
+    "pytz>=2025.1",
 ]
 
 [dependency-groups]

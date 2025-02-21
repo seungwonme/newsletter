@@ -1,11 +1,8 @@
-from tavily import TavilyClient
-from langchain_openai import ChatOpenAI
-from newsletter.graph.state import WorkflowState
 import os
 
+from tavily import TavilyClient
 
-llm = ChatOpenAI(model="gpt-4o-mini")
-tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+from src.agent.utils.state import WorkflowState
 
 
 def _get_raw_contents(response) -> tuple[list[str], list[str]]:
@@ -21,6 +18,8 @@ def _get_raw_contents(response) -> tuple[list[str], list[str]]:
 
 
 def search_node(state: WorkflowState):
+    tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
+
     response = tavily.search(
         query=state["search_queries"][-1],
         max_results=5,
@@ -33,21 +32,16 @@ def search_node(state: WorkflowState):
     print("====================search_node====================")
     for idx, content in enumerate(raw_contents):
         print(
-            f"search_results[{idx}]:"
-            f" {content[:100] + '...' if len(content) > 100 else content}"
+            f"search_results[{idx}]:" f" {content[:100] + '...' if len(content) > 100 else content}"
         )
 
     return {"search_results": raw_contents, "search_urls": urls}
 
 
-from newsletter.graph.state import WorkflowState, initialize_state
-
+# pylint: disable=C0413
+from src.agent.utils.state import initialize_state  # noqa: E402
 
 if __name__ == "__main__":
-    state = WorkflowState(
-        initialize_state(
-            "Tell me about the DOGE (Department of Government Efficiency) department in"
-            " the United States led by Elon Musk."
-        )
-    )
+    search_query = "Tell me about the DOGE (Department of Government Efficiency) department in the United States led by Elon Musk."
+    state = WorkflowState(initialize_state(search_query=search_query))
     search_node(state)

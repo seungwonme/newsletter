@@ -1,9 +1,9 @@
-import csv
 import logging
 import xml.etree.ElementTree as ET
-from datetime import datetime
-from typing import Dict, List, NoReturn, Optional
+from datetime import datetime, timedelta
+from typing import List, NoReturn, Optional
 
+import pandas as pd
 import pytz
 import requests
 
@@ -11,7 +11,7 @@ from src.agent.utils.file_utils import save_text_to_unique_file
 from src.agent.utils.state import ContentData
 
 
-def load_rss_feeds(csv_path: str) -> Optional[List[Dict[str, str]]]:
+def load_csv(csv_path: str) -> pd.DataFrame:
     """
     CSV 파일에서 RSS 피드 정보를 로드합니다.
 
@@ -19,50 +19,30 @@ def load_rss_feeds(csv_path: str) -> Optional[List[Dict[str, str]]]:
         csv_path: RSS 피드 정보가 담긴 CSV 파일 경로
 
     Returns:
-        List[Dict[str, str]]: 성공시 피드 정보 리스트 반환
-        None: 실패시 None 반환
+        Optional[pd.DataFrame]: 성공시 DataFrame 반환, 실패시 None 반환
 
     Raises:
         FileNotFoundError: CSV 파일을 찾을 수 없는 경우
         csv.Error: CSV 파싱 중 에러 발생한 경우
     """
     try:
-        feeds = []
-        with open(csv_path, "r", encoding="utf-8") as file:
-            reader = csv.DictReader(file)
-            if not {"publisher", "category", "url"}.issubset(reader.fieldnames or []):
-                logging.error("CSV 파일에 필수 컬럼이 누락되었습니다")
-                return None
+        df = pd.read_csv(csv_path)
+        required_columns = {"publisher", "url", "category", "rss_url"}
 
-            for row in reader:
-                if not all(row.values()):
-                    logging.warning("빈 값이 있는 행을 건너뜁니다: %s", row)
-                    continue
+        if not required_columns.issubset(df.columns):
+            raise ValueError("CSV 파일에 필수 컬럼이 누락되었습니다")
 
-                feeds.append(
-                    {
-                        "publisher": row["publisher"].strip(),
-                        "url": row["url"].strip(),
-                        "category": row["category"].strip(),
-                        "rss_url": row["rss_url"].strip(),
-                    }
-                )
+        # 빈 값이 있는 행 제거
+        df = df.dropna()
 
-        if not feeds:
-            logging.warning("로드된 피드가 없습니다")
-            return None
+        if df.empty:
+            raise ValueError("CSV 파일에 유효한 데이터가 없습니다")
 
-        return feeds
+        return df[list(required_columns)]
 
-    except FileNotFoundError:
-        logging.error("파일을 찾을 수 없습니다: %s", csv_path)
-        return None
-    except csv.Error as e:
-        logging.error("CSV 파싱 중 에러 발생: %s", str(e))
-        return None
     except Exception as e:
-        logging.error("예상치 못한 에러 발생: %s", str(e))
-        return None
+        logging.error("CSV 파일 로드 중 오류 발생: %s", str(e))
+        raise e
 
 
 def fetch_feed(url: str) -> str | NoReturn:
@@ -122,12 +102,13 @@ def parse_date(date_str: str) -> Optional[datetime]:
     return None
 
 
-def parse_feed(xml_content: str) -> List[ContentData]:
+def parse_feed(xml_content: str, days: int = 1) -> List[ContentData]:
     """
-    XML 콘텐츠를 파싱하여 뉴스 항목 리스트를 반환합니다.
+    XML 콘텐츠를 파싱하여 지정된 일수 이내의 뉴스 항목 리스트를 반환합니다.
 
     Args:
         xml_content: 파싱할 RSS 피드 XML 문자열
+        days: 현재 시점으로부터 몇 일 전까지의 게시글을 가져올지 지정 (기본값: 1)
 
     Returns:
         List[ContentData]: 파싱된 뉴스 항목 리스트
@@ -146,6 +127,10 @@ def parse_feed(xml_content: str) -> List[ContentData]:
     root = ET.fromstring(xml_content)
     items = root.findall(".//item")
     channel = root.find("channel")
+
+    # 현재 시간과 기준 시간 설정
+    now = datetime.now(pytz.timezone("Asia/Seoul"))
+    cutoff_date = now - timedelta(days=days)
 
     def get_text(elem: Optional[ET.Element]) -> str:
         """요소의 텍스트를 추출하고 CDATA 섹션을 정리합니다."""
@@ -170,15 +155,24 @@ def parse_feed(xml_content: str) -> List[ContentData]:
 
     news_items = []
     for item in items:
+        pub_date = get_pub_date(item)
+
+        # 날짜가 없거나 기준 시간보다 이전이면 건너뛰기
+        if pub_date is None or pub_date < cutoff_date:
+            continue
+
         news_item: ContentData = {
             "title": get_text(item.find("title")),
             "url": get_text(item.find("link")),
             "description": get_text(item.find("description")),
             "thumbnail_url": get_thumbnail_url(item),
-            "date": get_pub_date(item),
+            "date": pub_date,
+            "content": get_text(item.find("description")),  # content 필드 추가
         }
         news_items.append(news_item)
 
+    # 날짜 기준 내림차순 정렬
+    news_items.sort(key=lambda x: x["date"] or datetime.min, reverse=True)
     return news_items
 
 
@@ -198,7 +192,7 @@ def format_news_content(news_items: List[ContentData], publisher: str, category:
 def main():
     try:
         # RSS 피드 정보 로드
-        feeds = load_rss_feeds("data/rss_feeds.csv")
+        feeds = load_csv("data/rss_feeds.csv")
 
         all_news_content = ""
         # for feed in feeds:
@@ -210,7 +204,7 @@ def main():
         #     except (requests.RequestException, ET.ParseError) as e:
         #         print(f"Error processing feed {feed['url']}: {e}")
         #         continue
-        feed = feeds[0]
+        feed = feeds.iloc[0]
         try:
             xml_content = fetch_feed(feed["rss_url"])
             news_items = parse_feed(xml_content)

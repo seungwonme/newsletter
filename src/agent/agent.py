@@ -6,7 +6,6 @@ from src.agent.nodes.curator import curator_node
 from src.agent.nodes.generator import generator_node
 from src.agent.nodes.rss_finder import rss_finder_node
 from src.agent.nodes.search import search_node
-from src.agent.nodes.search_optimizer import search_optimizer_node
 from src.agent.utils.state import WorkflowState
 from src.agent.utils.visualize import display_graph, save_graph_as_png
 
@@ -16,7 +15,6 @@ def get_graph() -> CompiledStateGraph:
     builder = StateGraph(WorkflowState)
 
     # 노드 추가
-    builder.add_node("search_optimizer", search_optimizer_node)
     builder.add_node("rss_finder", rss_finder_node)
     builder.add_node("search", search_node)
     builder.add_node("curator", curator_node)
@@ -24,9 +22,12 @@ def get_graph() -> CompiledStateGraph:
     builder.add_node("critique", critique_node)
 
     # 엣지 추가
-    builder.add_edge(START, "search_optimizer")
-    builder.add_edge("search_optimizer", "rss_finder")
-    builder.add_edge("rss_finder", "search")
+    builder.add_edge(START, "rss_finder")
+    builder.add_conditional_edges(
+        "rss_finder",
+        lambda x: "search" if x["search_contents"] else "curator",
+        ["search", "curator"],
+    )
     builder.add_edge("search", "curator")
     builder.add_edge("curator", "generator")
     builder.add_edge("generator", "critique")

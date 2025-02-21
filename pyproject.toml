@@ -13,6 +13,7 @@ dependencies = [
     "langgraph>=0.2.74",
     "markdownify>=0.14.1",
     "pytz>=2025.1",
+    "pandas>=2.2.3",
 ]
 
 [dependency-groups]

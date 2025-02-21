@@ -13,13 +13,13 @@ class ContentData(TypedDict, total=False):
 
 
 class WorkflowState(TypedDict):
-    search_queries: list[str]
+    topics: list[str]
+    sources: list[str]
     search_contents: list[ContentData]
     feedback: Optional[str]
     newsletter_title: str
     newsletter_contents: list[str]
-    topics: list[str]
-    sources: list[str]
+    newsletter_img_url: str
 
 
 def initialize_state(**kwargs) -> WorkflowState:
@@ -31,24 +31,22 @@ def initialize_state(**kwargs) -> WorkflowState:
     Returns:
         WorkflowState: A dictionary representing the initial state of the workflow.
     WorkflowState Structure:
-        search_queries (list[str]): Search terms related to the newsletter.
-        search_urls (list[str]): URLs related to the search results.
-        search_results (list[str]): Search results related to the newsletter content.
+        topics (list[str]): Topics related to the newsletter.
+        sources (list[str]): Sources related to the newsletter.
+        search_contents (list[ContentData]): Content data for the newsletter.
         feedback (Optional[str]): Feedback of the newsletter content.
         newsletter_title (str): Title of the newsletter.
         newsletter_contents (list[str]): The main content of the newsletter.
-        topics (list[str]): Topics related to the newsletter.
-        sources (list[str]): Sources related to the newsletter.
     """
 
     state: WorkflowState = {
-        "search_queries": [],
+        "topics": [],
+        "sources": [],
         "search_contents": [],
         "feedback": None,
         "newsletter_title": "",
         "newsletter_contents": [],
-        "topics": [],
-        "sources": [],
+        "newsletter_img_url": "",
     }
 
     for key, value in kwargs.items():

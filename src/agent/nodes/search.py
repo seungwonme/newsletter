@@ -2,46 +2,57 @@ import os
 
 from tavily import TavilyClient
 
-from src.agent.utils.state import WorkflowState
-
-
-def _get_raw_contents(response) -> tuple[list[str], list[str]]:
-    raw_contents = []
-    urls = []
-    for result in response["results"]:
-        if result.get("raw_content"):
-            raw_contents.append(result["raw_content"])
-        if result.get("url"):
-            urls.append(result["url"])
-
-    return raw_contents, urls
+from src.agent.utils.state import ContentData, WorkflowState
+from tests.utils import save_text_to_unique_file
 
 
 def search_node(state: WorkflowState):
     tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
+    topic_str = ", ".join(state["topics"])
     response = tavily.search(
-        query=state["search_queries"][-1],
-        max_results=5,
+        query=topic_str,
+        max_results=10,
         include_answer=False,
+        include_domains=state["sources"],
         include_raw_content=True,
+        include_images=True,
     )
 
-    raw_contents, urls = _get_raw_contents(response)
-
-    print("====================search_node====================")
-    for idx, content in enumerate(raw_contents):
-        print(
-            f"search_results[{idx}]:" f" {content[:100] + '...' if len(content) > 100 else content}"
+    news_items = []
+    for result in response["results"]:
+        news_item: ContentData = ContentData(
+            title=result.get("title"),
+            url=result.get("url"),
+            description=result["content"],
+            content=result["raw_content"],
         )
+        news_items.append(news_item)
 
-    return {"search_results": raw_contents, "search_urls": urls}
+    return {"search_contents": news_items, "newsletter_img_url": response["images"][0]}
 
-
-# pylint: disable=C0413
-from src.agent.utils.state import initialize_state  # noqa: E402
 
 if __name__ == "__main__":
-    search_query = "Tell me about the DOGE (Department of Government Efficiency) department in the United States led by Elon Musk."
-    state = WorkflowState(initialize_state(search_query=search_query))
-    search_node(state)
+    test_state: WorkflowState = {
+        "topics": ["trump", "biden"],
+        "sources": ["https://www.bbc.com/", "https://www.wsj.com/"],
+        "search_contents": [],
+        "feedback": None,
+        "newsletter_title": "",
+        "newsletter_img_url": "",
+        "newsletter_contents": [],
+    }
+
+    result_state = search_node(test_state)
+    full_content = f"![newsletter_img_url]({result_state['newsletter_img_url']})\n\n"
+    for content in result_state["search_contents"]:
+        full_content += f"# {content.get('title')}\n\n"
+        full_content += f"> {content.get('date')}" if content.get("date") else ""
+        full_content += "\n\n"
+        full_content += f"[Article URL]({content.get('url')})\n\n"
+        if content.get("content"):
+            full_content += f"Content: {content.get('content')}\n\n"
+        else:
+            full_content += f"Description: {content.get('description')}\n\n"
+        full_content += "-" * 80 + "\n\n"
+    save_text_to_unique_file(full_content, file_name="rss_finder_test")

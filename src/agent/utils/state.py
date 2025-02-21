@@ -1,10 +1,20 @@
+from datetime import datetime
+
 from typing_extensions import Optional, TypedDict
+
+
+class ContentData(TypedDict, total=False):
+    title: str
+    url: str
+    description: str
+    thumbnail_url: str
+    content: str
+    date: datetime | None
 
 
 class WorkflowState(TypedDict):
     search_queries: list[str]
-    search_urls: list[str]
-    search_results: list[str]
+    search_contents: list[ContentData]
     feedback: Optional[str]
     newsletter_title: str
     newsletter_contents: list[str]
@@ -33,8 +43,7 @@ def initialize_state(**kwargs) -> WorkflowState:
 
     state: WorkflowState = {
         "search_queries": [],
-        "search_urls": [],
-        "search_results": [],
+        "search_contents": [],
         "feedback": None,
         "newsletter_title": "",
         "newsletter_contents": [],

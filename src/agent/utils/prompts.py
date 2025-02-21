@@ -1,6 +1,23 @@
 from langchain import hub
 from langchain_core.prompts import PromptTemplate
 
+# CATEGORY_MATCHING_PROMPT = ChatPromptTemplate(
+#     [
+#         ("system", "You are a helpful AI bot. Your name is {name}."),
+#         ("human", "Hello, how are you doing?"),
+#         ("ai", "I'm doing well, thanks!"),
+#         ("human", "{user_input}"),
+#     ]
+# )
+CATEGORY_MATCHING_PROMPT = PromptTemplate(
+    input_variables=["topics", "categories"],
+    template="""다음 중 '{topics}'와 연관성이 높은 카테고리를 선택하세요 (중복 선택 가능):
+
+{categories}
+""",
+)
+
+
 QUERY_OPTIMIZATION_PROMPT = hub.pull("aidenme/query_optimizer")
 SUMMARIZER_PROMPT = hub.pull("aidenme/summarizer")
 GENERATOR_PROMPT = hub.pull("aidenme/newsletter_gerenerator")

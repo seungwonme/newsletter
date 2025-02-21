@@ -8,6 +8,7 @@ import pytz
 import requests
 
 from src.agent.utils.file_utils import save_text_to_unique_file
+from src.agent.utils.state import ContentData
 
 
 def load_rss_feeds(csv_path: str) -> Optional[List[Dict[str, str]]]:
@@ -121,7 +122,7 @@ def parse_date(date_str: str) -> Optional[datetime]:
     return None
 
 
-def parse_feed(xml_content: str) -> List[Dict[str, Optional[str | datetime]]]:
+def parse_feed(xml_content: str) -> List[ContentData]:
     """
     XML 콘텐츠를 파싱하여 뉴스 항목 리스트를 반환합니다.
 
@@ -129,14 +130,13 @@ def parse_feed(xml_content: str) -> List[Dict[str, Optional[str | datetime]]]:
         xml_content: 파싱할 RSS 피드 XML 문자열
 
     Returns:
-        List[Dict[str, Optional[str | datetime]]]: 파싱된 뉴스 항목 리스트:
+        List[ContentData]: 파싱된 뉴스 항목 리스트
         - title: 뉴스 제목
-        - link: 뉴스 링크
+        - url: 뉴스 링크
         - description: 뉴스 설명
-        - pub_date: 발행일 (datetime 객체 또는 None)
-        - creator: 작성자
-        - guid: 고유 식별자
+        - date: 발행일 (datetime 또는 None)
         - thumbnail_url: 썸네일 이미지 URL
+        - content: 뉴스 내용
 
     Raises:
         ET.ParseError: XML 파싱 실패시
@@ -170,29 +170,27 @@ def parse_feed(xml_content: str) -> List[Dict[str, Optional[str | datetime]]]:
 
     news_items = []
     for item in items:
-        news_item = {
+        news_item: ContentData = {
             "title": get_text(item.find("title")),
-            "link": get_text(item.find("link")),
+            "url": get_text(item.find("link")),
             "description": get_text(item.find("description")),
-            "pub_date": get_pub_date(item),
-            "creator": get_text(item.find("dc:creator", ns)),
-            "guid": get_text(item.find("guid")),
             "thumbnail_url": get_thumbnail_url(item),
+            "date": get_pub_date(item),
         }
         news_items.append(news_item)
 
     return news_items
 
 
-def format_news_content(news_items: List[Dict], publisher: str, category: str) -> str:
+def format_news_content(news_items: List[ContentData], publisher: str, category: str) -> str:
     """뉴스 항목을 포맷팅된 문자열로 변환합니다."""
     content = f"\n=== {publisher.upper()} - {category.upper()} ===\n"
     for item in news_items:
-        content += f"\nTitle: {item['title']}\n"
-        content += f"Date: {item['pub_date']}\n" if item["pub_date"] else ""
-        content += f"Link: {item['link']}\n"
-        content += f"Thumbnail: {item['thumbnail_url']}\n"
-        content += f"Description: {item['description']}\n"
+        content += f"\nTitle: {item.get('title')}\n"
+        content += f"Date: {item.get('date')}\n" if item.get("date") else ""
+        content += f"URL: {item.get('url')}\n"
+        content += f"Thumbnail: {item.get('thumbnail_url')}\n"
+        content += f"Description: {item.get('description')}\n"
         content += "-" * 80 + "\n"
     return content
 

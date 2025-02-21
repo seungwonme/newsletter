@@ -14,6 +14,5 @@ if __name__ == "__main__":
     res = graph.invoke(state, {"recursion_limit": 100})
     print("--------------------------------------")
     print(res["intent_of_requested_content"])
-    print(res["search_queries"][0])
 
     save_text_to_unique_file(res["newsletter_contents"][-1], "newsletter")

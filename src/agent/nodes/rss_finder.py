@@ -1,4 +1,6 @@
+import json
 import logging
+from urllib.parse import urlparse
 
 from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
@@ -20,14 +22,12 @@ def match_category(topics: list[str], categories: list[str]) -> list[str]:
     class Predict(BaseModel):
         categories: list[str]
 
-    llm_with_tool = llm.with_structured_output(Predict)
-    chain = CATEGORY_MATCHING_PROMPT | llm_with_tool
-
     topics_str = ",".join(topics)
     categories_str = "\n".join(f"- {category}" for category in categories)
-
-    response = chain.invoke({"topics": topics_str, "categories": categories_str})
-    predicted_categories = response.categories
+    prompt = CATEGORY_MATCHING_PROMPT.format(topics=topics_str, categories=categories_str)
+    response = llm.bind_tools([Predict]).invoke(prompt)
+    arguments = json.loads(response.additional_kwargs["tool_calls"][0]["function"]["arguments"])
+    predicted_categories = arguments.get("categories", [])
 
     matched_categories = []
     for category in predicted_categories:
@@ -85,6 +85,8 @@ def rss_finder_node(state: WorkflowState) -> WorkflowState:
                 logging.error("피드 처리 중 오류 발생: %s", str(e))
                 continue
 
+    print(state["search_contents"])
+
     return state
 
 
@@ -96,8 +98,10 @@ if __name__ == "__main__":
         "feedback": None,
         "newsletter_title": "",
         "newsletter_img_url": "",
-        "newsletter_contents": [],
+        "newsletter_content": "",
     }
+
+    print(urlparse("https://www.bbc.com/").hostname)
 
     result_state = rss_finder_node(test_state)
     full_content = ""

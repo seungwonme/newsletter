@@ -14,6 +14,7 @@ dependencies = [
     "markdownify>=0.14.1",
     "pytz>=2025.1",
     "pandas>=2.2.3",
+    "crawl4ai>=0.4.248",
 ]
 
 [dependency-groups]
@@ -21,7 +22,6 @@ dev = [
     "pytest>=8.3.4",
     "pre-commit>=4.1.0",
     "tavily-python>=0.5.1",
-    "crawl4ai>=0.4.248",
     "firecrawl-py>=1.12.0",
     "newsapi-python>=0.2.7",
     "newsdataapi>=0.1.21",

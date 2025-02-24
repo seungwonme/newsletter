@@ -9,6 +9,6 @@ def create_newsletter(topics: list[str], sources: list[str]) -> dict:
 
     res_dict = {
         "title": res["newsletter_title"],
-        "content": res["newsletter_contents"][-1],
+        "content": res["newsletter_content"][-1],
     }
     return res_dict

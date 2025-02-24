@@ -1,7 +1,7 @@
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
-from src.agent.nodes.critique import critique_node
+from src.agent.nodes.crawler import crawler_node
 from src.agent.nodes.curator import curator_node
 from src.agent.nodes.generator import generator_node
 from src.agent.nodes.rss_finder import rss_finder_node
@@ -18,22 +18,27 @@ def get_graph() -> CompiledStateGraph:
     builder.add_node("rss_finder", rss_finder_node)
     builder.add_node("search", search_node)
     builder.add_node("curator", curator_node)
+    builder.add_node("crawler", crawler_node)
     builder.add_node("generator", generator_node)
-    builder.add_node("critique", critique_node)
+    # builder.add_node("critique", critique_node)
 
     # 엣지 추가
     builder.add_edge(START, "rss_finder")
+    # FIXME: rss checker -> rss_finder or search로 분기해야할듯?
+    # 만약 [bbc, 개인 블로그]가 소스라면 지금은 bbc만 처리하고 개인 블로그는 무시함
     builder.add_conditional_edges(
         "rss_finder",
-        lambda x: "search" if x["search_contents"] else "curator",
-        ["search", "curator"],
+        lambda x: "curator" if x["search_contents"] else "search",
+        ["curator", "search"],
     )
     builder.add_edge("search", "curator")
-    builder.add_edge("curator", "generator")
-    builder.add_edge("generator", "critique")
-    builder.add_conditional_edges(
-        "critique", lambda x: END if x["feedback"] is None else "generator", [END, "generator"]
-    )
+    builder.add_edge("curator", "crawler")
+    builder.add_edge("crawler", "generator")
+    builder.add_edge("generator", END)
+    # builder.add_edge("generator", "critique")
+    # builder.add_conditional_edges(
+    #     "critique", lambda x: END if x["feedback"] is None else "generator", [END, "generator"]
+    # )
 
     graph = builder.compile()
 

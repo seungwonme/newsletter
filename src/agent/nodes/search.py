@@ -40,7 +40,7 @@ if __name__ == "__main__":
         "feedback": None,
         "newsletter_title": "",
         "newsletter_img_url": "",
-        "newsletter_contents": [],
+        "newsletter_content": "",
     }
 
     result_state = search_node(test_state)
@@ -55,4 +55,4 @@ if __name__ == "__main__":
         else:
             full_content += f"Description: {content.get('description')}\n\n"
         full_content += "-" * 80 + "\n\n"
-    save_text_to_unique_file(full_content, file_name="rss_finder_test")
+    save_text_to_unique_file(full_content, file_name="search_test")

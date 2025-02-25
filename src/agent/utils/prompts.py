@@ -38,9 +38,15 @@ Write in {language}.""",
         (
             "human",
             """# Topics: {topics}
-<articles>
-{sources}
-</articles>""",
+
+Each article is separated by the following format:
+---article_start---.
+Title: [Title of article]
+Content:
+[article body]
+---article_end---
+
+{sources}""",
         ),
     ]
 )

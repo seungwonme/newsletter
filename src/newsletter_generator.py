@@ -31,7 +31,7 @@ async def create_newsletter(
     if not language:
         raise ValueError(f"Invalid language code: {language_code}")
     graph = get_graph()
-    state = WorkflowState(initialize_state(topics=topics, sources=sources, language=language))
+    state = WorkflowState(initialize_state(topics=topics, sources=sources, language=language.name))
     res = await graph.ainvoke(state, {"recursion_limit": 100})
 
     res_dict = {

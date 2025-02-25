@@ -18,11 +18,12 @@ llm = ChatOpenAI(model="gpt-4o-mini")
 def generator_node(state: WorkflowState):
     class NewsSection(BaseModel):
         """
-        A model representing a section of a newsletter.
+        A model representing a section of a newsletter, with a 1:1 mapping to an input article.
+        Each NewsSection corresponds to exactly one source article in the input.
 
         Attributes:
-            subtitle (str): The subtitle or heading of the news section.
-            content (str): The main text content of the news section.
+            subtitle (str): The subtitle or heading derived from the source article.
+            content (str): The summarized or reformatted content from the source article.
         """
 
         subtitle: str
@@ -31,13 +32,15 @@ def generator_node(state: WorkflowState):
     class WriterResponse(BaseModel):
         """A model representing the response from a writer agent.
 
-        This class encapsulates the structured output of a writing task, containing
-        a title, content sections, and a summary.
+        This class encapsulates the structured output of a writing task. The number of content
+        sections must exactly match the number of input articles, maintaining a 1:1 relationship
+        between source articles and output sections.
 
         Attributes:
             title (str): The main title of the written content.
-            contents (List[NewsSection]): A list of content sections, each being a NewsSection object.
-            summary (str): A brief summary or abstract of the entire content.
+            contents (List[NewsSection]): A list of content sections, where each NewsSection
+                                        corresponds to exactly one input article.
+            summary (str): A brief summary of all processed articles.
         """
 
         title: str
@@ -47,10 +50,11 @@ def generator_node(state: WorkflowState):
     topic_str = ", ".join(state["topics"])
     full_contents = ""
     for idx, item in enumerate(state["search_contents"]):
-        full_contents += f"##{idx + 1}. {item.get('title', '')}\n"
-        if item.get("thumbnail_url"):
-            full_contents += f"![]({item.get('thumbnail_url', '')})\n"
-        full_contents += item.get("content", "") + "\n\n"
+        full_contents += f"---article_{idx + 1}_start---\n"
+        full_contents += f"Title: {item.get('title', '')}\n"
+        full_contents += "Content:\n"
+        full_contents += f"{item.get('content', '')}\n"
+        full_contents += f"---article_{idx + 1}_end---\n\n"
     now = datetime.now().strftime("%Y-%m-%d")
     prompt = WRITER_PROMPT.invoke(
         {
@@ -68,6 +72,7 @@ def generator_node(state: WorkflowState):
     full_contents = now + "\n\n"
     if state["newsletter_img_url"]:
         full_contents += f"![]({state['newsletter_img_url']})\n\n"
+    # FIXME: 지금은 기사가 5개 이상 있다고 가정되어 있음
     for idx, news_section in enumerate(contents):
         full_contents += (
             f"## [{news_section['subtitle']}]({state['search_contents'][idx]['url']})\n\n"

@@ -8,20 +8,18 @@ load_dotenv()
 import asyncio
 import sys
 
-from src.agent.agent import get_graph
 from src.agent.utils.file_utils import save_text_to_unique_file
-from src.agent.utils.state import WorkflowState, initialize_state
+from src.newsletter_generator import create_newsletter
 
 
 async def main():
-    graph = get_graph()
     argv = sys.argv
     if len(argv) <= 2:
         print("Usage: python src.app <topics> <sources>")
         sys.exit(1)
-    state = WorkflowState(initialize_state(topics=[argv[1]], sources=[argv[2]]))
-    res = await graph.ainvoke(state, {"recursion_limit": 100})
-    save_text_to_unique_file(res["newsletter_content"], "newsletter")
+    res = await create_newsletter([argv[1]], [argv[2]], language_code="ko")
+    full_contents = f"# {res["title"]}\n\n" + res["content"]
+    save_text_to_unique_file(full_contents, "newsletter")
 
 
 if __name__ == "__main__":

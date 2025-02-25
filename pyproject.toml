@@ -15,6 +15,7 @@ dependencies = [
     "pytz>=2025.1",
     "pandas>=2.2.3",
     "crawl4ai>=0.4.248",
+    "pycountry>=24.6.1",
 ]
 
 [dependency-groups]

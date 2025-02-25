@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from typing_extensions import Optional, TypedDict
+from typing_extensions import TypedDict
 
 
 class BaseContentFields(TypedDict):
@@ -18,8 +18,8 @@ class ContentData(BaseContentFields, total=False):
 class WorkflowState(TypedDict):
     topics: list[str]
     sources: list[str]
+    language: str
     search_contents: list[ContentData]
-    feedback: Optional[str]
     newsletter_title: str
     newsletter_content: str
     newsletter_img_url: str
@@ -36,8 +36,8 @@ def initialize_state(**kwargs) -> WorkflowState:
     WorkflowState Structure:
         topics (list[str]): Topics related to the newsletter.
         sources (list[str]): Sources related to the newsletter.
+        language (str): Language for the newsletter
         search_contents (list[ContentData]): Content data for the newsletter.
-        feedback (Optional[str]): Feedback of the newsletter content.
         newsletter_title (str): Title of the newsletter.
         newsletter_content (str): The main content of the newsletter.
     """
@@ -45,8 +45,8 @@ def initialize_state(**kwargs) -> WorkflowState:
     state: WorkflowState = {
         "topics": [],
         "sources": [],
+        "language": "",
         "search_contents": [],
-        "feedback": None,
         "newsletter_title": "",
         "newsletter_content": "",
         "newsletter_img_url": "",

@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from typing_extensions import List
 
-from src.agent.utils.prompts import REVISER_PROMPT, WRITER_PROMPT
+from src.agent.utils.prompts import WRITER_PROMPT
 from src.agent.utils.state import ContentData, WorkflowState
 from tests.utils import save_text_to_unique_file
 
@@ -15,7 +15,7 @@ load_dotenv()
 llm = ChatOpenAI(model="gpt-4o-mini")
 
 
-def write(state: WorkflowState):
+def generator_node(state: WorkflowState):
     class NewsSection(BaseModel):
         """
         A model representing a section of a newsletter.
@@ -54,8 +54,8 @@ def write(state: WorkflowState):
     now = datetime.now().strftime("%Y-%m-%d")
     prompt = WRITER_PROMPT.invoke(
         {
+            "language": state["language"],
             "topics": topic_str,
-            "date": now,
             "sources": full_contents,
         }
     )
@@ -65,7 +65,7 @@ def write(state: WorkflowState):
     contents = arguments.get("contents", [])
     summary = arguments.get("summary", [])
 
-    full_contents = ""
+    full_contents = now + "\n\n"
     if state["newsletter_img_url"]:
         full_contents += f"![]({state['newsletter_img_url']})\n\n"
     for idx, news_section in enumerate(contents):
@@ -81,25 +81,6 @@ def write(state: WorkflowState):
         "newsletter_title": title,
         "newsletter_content": full_contents,
     }
-
-
-def revise(state: WorkflowState):
-    article = state["newsletter_content"]
-    prompt = REVISER_PROMPT.invoke({"articles": article, "critique": state["feedback"]})
-    response = llm.invoke(prompt)
-    if isinstance(response.content, list):
-        content_str = "".join(map(str, response.content))
-    else:
-        content_str = response.content
-    print("====================generator_node(revise)====================")
-    print(content_str)
-
-    return {"newsletter_content": content_str}
-
-
-def generator_node(state: WorkflowState):
-    return write(state)
-    # return write(state) if state["feedback"] is None else revise(state)
 
 
 if __name__ == "__main__":
@@ -154,8 +135,8 @@ if __name__ == "__main__":
     test_state: WorkflowState = {
         "topics": ["trump", "biden", "election"],
         "sources": ["https://www.bbc.com/", "https://www.wsj.com/"],
+        "language": "Korean",
         "search_contents": mock_contents,
-        "feedback": None,
         "newsletter_title": "",
         "newsletter_img_url": "",
         "newsletter_content": "",

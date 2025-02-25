@@ -20,7 +20,6 @@ def get_graph() -> CompiledStateGraph:
     builder.add_node("curator", curator_node)
     builder.add_node("crawler", crawler_node)
     builder.add_node("generator", generator_node)
-    # builder.add_node("critique", critique_node)
 
     # 엣지 추가
     builder.add_edge(START, "rss_finder")
@@ -35,11 +34,6 @@ def get_graph() -> CompiledStateGraph:
     builder.add_edge("curator", "crawler")
     builder.add_edge("crawler", "generator")
     builder.add_edge("generator", END)
-    # builder.add_edge("generator", "critique")
-    # builder.add_conditional_edges(
-    #     "critique", lambda x: END if x["feedback"] is None else "generator", [END, "generator"]
-    # )
-
     graph = builder.compile()
 
     # 그래프 시각화

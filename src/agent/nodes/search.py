@@ -36,8 +36,8 @@ if __name__ == "__main__":
     test_state: WorkflowState = {
         "topics": ["trump", "biden"],
         "sources": ["https://www.bbc.com/", "https://www.wsj.com/"],
+        "language": "Korean",
         "search_contents": [],
-        "feedback": None,
         "newsletter_title": "",
         "newsletter_img_url": "",
         "newsletter_content": "",

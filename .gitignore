@@ -194,3 +194,5 @@ cython_debug/
 pbr.md
 output/
 proposal/
+credentials.json
+token.json

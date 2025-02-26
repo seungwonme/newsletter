@@ -72,7 +72,7 @@ def generator_node(state: WorkflowState):
     full_contents = now + "\n\n"
     if state["newsletter_img_url"]:
         full_contents += f"![]({state['newsletter_img_url']})\n\n"
-    # FIXME: 지금은 기사가 5개 이상 있다고 가정되어 있음
+    # FIXME: 지금은 기사와 그 기사의 요약이 1:1 매칭이라고 가정하고 있음
     for idx, news_section in enumerate(contents):
         full_contents += (
             f"## [{news_section['subtitle']}]({state['search_contents'][idx]['url']})\n\n"

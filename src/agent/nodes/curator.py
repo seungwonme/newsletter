@@ -9,9 +9,9 @@ import json
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
+from src.agent.utils.file_utils import save_text_to_unique_file
 from src.agent.utils.prompts import CURATOR_PROMPT
 from src.agent.utils.state import ContentData, WorkflowState
-from tests.utils import save_text_to_unique_file
 
 
 def curator_node(state: WorkflowState):

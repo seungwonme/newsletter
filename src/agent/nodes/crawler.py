@@ -2,8 +2,8 @@ import asyncio
 
 from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
 
+from src.agent.utils.file_utils import save_text_to_unique_file
 from src.agent.utils.state import ContentData, WorkflowState
-from tests.utils import save_text_to_unique_file
 
 
 async def crawler_node(state: WorkflowState) -> WorkflowState:

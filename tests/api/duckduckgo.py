@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 from langchain_community.tools import DuckDuckGoSearchResults
 
-from tests.utils import save_text_to_unique_file
+from src.agent.utils.file_utils import save_text_to_unique_file
 
 load_dotenv()
 

@@ -2,8 +2,8 @@ import os
 
 from tavily import TavilyClient
 
+from src.agent.utils.file_utils import save_text_to_unique_file
 from src.agent.utils.state import ContentData, WorkflowState
-from tests.utils import save_text_to_unique_file
 
 
 def search_node(state: WorkflowState):

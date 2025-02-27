@@ -6,10 +6,10 @@ from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
+from src.agent.utils.file_utils import save_text_to_unique_file
 from src.agent.utils.prompts import CATEGORY_MATCHING_PROMPT
 from src.agent.utils.rss_parse import fetch_feed, load_csv, parse_feed
 from src.agent.utils.state import WorkflowState
-from tests.utils import save_text_to_unique_file
 
 load_dotenv()
 

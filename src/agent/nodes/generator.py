@@ -6,9 +6,9 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 from typing_extensions import List
 
+from src.agent.utils.file_utils import save_text_to_unique_file
 from src.agent.utils.prompts import WRITER_PROMPT
 from src.agent.utils.state import ContentData, WorkflowState
-from tests.utils import save_text_to_unique_file
 
 load_dotenv()
 

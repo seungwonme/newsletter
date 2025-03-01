@@ -2,7 +2,6 @@ import json
 import logging
 from urllib.parse import urlparse
 
-from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
@@ -11,28 +10,64 @@ from src.agent.utils.prompts import CATEGORY_MATCHING_PROMPT
 from src.agent.utils.rss_parse import fetch_feed, load_csv, parse_feed
 from src.agent.utils.state import WorkflowState
 
-load_dotenv()
-
 llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
 
 
-def match_category(topics: list[str], categories: list[str]) -> list[str]:
-    """주어진 주제 중 가장 적합한 카테고리를 찾습니다."""
+def extract_domain(url: str) -> str:
+    """URL에서 도메인만 추출합니다."""
+    try:
+        parsed_url = urlparse(url)
+        # 프로토콜이 없는 경우 처리
+        if not parsed_url.netloc:
+            parsed_url = urlparse(f"https://{url}")
+        domain = parsed_url.netloc or parsed_url.path
+        domain = domain.lower().replace("www.", "")
+        return domain
+    except Exception as e:
+        logging.error("URL 파싱 오류: %s", str(e))
+        return url.lower()
+
+
+def match_categories(topics: list[str], categories: list[str]) -> list[str]:
+    """
+    주어진 주제와 가장 관련성이 높은 카테고리들을 찾습니다.
+
+    이 함수는 주어진 토픽 리스트와 카테고리 리스트를 비교하여,
+    토픽과 가장 관련성이 높은 카테고리를 최대 3개까지 반환합니다.
+    LLM을 활용하여 의미적 연관성을 판단합니다.
+
+    Args:
+        topics: 관심 주제 목록(예: ["정치", "경제", "기술"])
+        categories: 사용 가능한 카테고리 목록(예: ["world", "politics", "business"])
+
+    Returns:
+        매칭된 카테고리의 목록. 일치하는 카테고리가 없으면 빈 목록 반환.
+        categories가 ["__all__"]인 경우 그대로 반환.
+    """
 
     class Predict(BaseModel):
+        """A list of categories that are most relevant to your topic (up to 3)"""
+
         categories: list[str]
 
-    topics_str = ",".join(topics)
-    categories_str = "\n".join(f"- {category}" for category in categories)
-    prompt = CATEGORY_MATCHING_PROMPT.format(topics=topics_str, categories=categories_str)
-    response = llm.bind_tools([Predict]).invoke(prompt)
-    arguments = json.loads(response.additional_kwargs["tool_calls"][0]["function"]["arguments"])
-    predicted_categories = arguments.get("categories", [])
+    if categories == ["__all__"]:
+        return ["__all__"]
 
-    matched_categories = []
-    for category in predicted_categories:
-        if category in categories:
-            matched_categories.append(category)
+    try:
+        topics_str = ",".join(topics)
+        categories_str = "\n".join(f"- {category}" for category in categories)
+        prompt = CATEGORY_MATCHING_PROMPT.format(topics=topics_str, categories=categories_str)
+        response = llm.bind_tools([Predict]).invoke(prompt)
+        arguments = json.loads(response.additional_kwargs["tool_calls"][0]["function"]["arguments"])
+        predicted_categories = arguments.get("categories", [])
+
+        matched_categories = []
+        for category in predicted_categories:
+            if category in categories:
+                matched_categories.append(category)
+    except Exception as e:
+        logging.error("카테고리 매칭 중 오류 발생: %s", str(e))
+        return ["__all__"] if "__all__" in categories else []
 
     return matched_categories
 
@@ -49,10 +84,11 @@ def rss_finder_node(state: WorkflowState) -> WorkflowState:
 
     # 각 소스에 대해 처리
     for source in state["sources"]:
-        # 매칭되는 publisher 찾기 - DataFrame 필터링 사용
-        # TODO: 소스는 프로토콜 없이 도메인만 입력되도록 수정 + 트레일링 슬래시 여부 판단하기
+        source_domain = extract_domain(source)
+
+        # 매칭되는 publisher 찾기 - 도메인 비교
         matching_feeds = feeds_df[
-            feeds_df["url"].str.lower().str.contains(source.lower(), na=False)
+            feeds_df["url"].apply(lambda x, domain=source_domain: extract_domain(x) == domain)
         ]
 
         if matching_feeds.empty:
@@ -62,12 +98,12 @@ def rss_finder_node(state: WorkflowState) -> WorkflowState:
         available_categories = matching_feeds["category"].unique().tolist()
 
         # 카테고리 매칭
-        matched_category = match_category(state["topics"], available_categories)
-        if not matched_category:
+        matched_categories = match_categories(state["topics"], available_categories)
+        if not matched_categories:
             continue
 
         # 매칭된 카테고리에 해당하는 모든 피드 선택
-        selected_feeds = matching_feeds[matching_feeds["category"].isin(matched_category)]
+        selected_feeds = matching_feeds[matching_feeds["category"].isin(matched_categories)]
 
         if selected_feeds.empty:
             continue
@@ -85,23 +121,57 @@ def rss_finder_node(state: WorkflowState) -> WorkflowState:
                 logging.error("피드 처리 중 오류 발생: %s", str(e))
                 continue
 
-    print(state["search_contents"])
-
     return state
 
 
 if __name__ == "__main__":
     test_state: WorkflowState = {
         "topics": ["trump", "biden"],
-        "sources": ["https://www.bbc.com/", "https://www.wsj.com/"],
+        "sources": [
+            # "https://news.google.com/",
+            # "https://news.yahoo.com/",
+            # "https://www.nytimes.com/",
+            # "https://www.bbc.com/",
+            # "https://www.bloomberg.com/",
+            # "https://www.reuters.com/",
+            # "https://www.wsj.com/",
+            # "https://www.foxnews.com/",
+            # "https://www.washingtonpost.com/",
+            # "https://www.vox.com/",
+            # "https://www.huffpost.com/",
+            # "https://abcnews.go.com/",
+            # "https://www.marketwatch.com/",
+            # "https://www.dailymail.co.uk/",
+            # "https://news.sbs.co.kr/",
+            # "https://news.jtbc.co.kr/",
+            # "https://www.chosun.com/",
+            "https://www.donga.com/",
+            "https://sports.donga.com/",
+            # "https://www.mk.co.kr/",
+            # "https://www.hankyung.com/",
+            # "https://www.khan.co.kr/",
+            # "https://www.hani.co.kr/",
+            # "https://www.newsis.com/",
+            # "https://news.mt.co.kr/",
+            # "https://www.yonhapnewstv.co.kr/",
+            # "https://www.pressian.com/",
+            # "https://www.tongilnews.com/",
+            # "https://www.ablenews.co.kr/",
+            # "https://www.sisajournal.com/",
+            # "https://www.segye.com/",
+            # "https://www.sportsworldi.com/",
+            # "https://www.segyefn.com/",
+            # "https://www.mediatoday.co.kr/",
+            # "http://www.donga.com/",
+            # "https://sports.donga.com/",
+            # "https://www.kmib.co.kr/",
+        ],
         "language": "Korean",
         "search_contents": [],
         "newsletter_title": "",
         "newsletter_img_url": "",
         "newsletter_content": "",
     }
-
-    print(urlparse("https://www.bbc.com/").hostname)
 
     result_state = rss_finder_node(test_state)
     full_content = ""

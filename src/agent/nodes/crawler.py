@@ -1,23 +1,35 @@
 import asyncio
 
-from crawl4ai import AsyncWebCrawler, CrawlerRunConfig
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
 
 from src.agent.utils.file_utils import save_text_to_unique_file
 from src.agent.utils.state import ContentData, WorkflowState
 
 
 async def crawler_node(state: WorkflowState) -> WorkflowState:
-    config = CrawlerRunConfig(
+    browser_config = BrowserConfig(
+        browser_type="chromium",
+        # viewport_width=1280,
+        # viewport_height=720,
+        headless=True,  # 브라우저 창을 띄우지 않고 실행
+        verbose=True,  # NOTE: 추가 정보 출력
+        user_agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/116.0.0.0 Safari/537.36",
+        light_mode=True,
+    )
+
+    run_config = CrawlerRunConfig(
         word_count_threshold=10,
+        wait_for_images=True,
+        user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
         excluded_tags=["form", "header", "footer", "nav"],
         exclude_external_links=True,
         exclude_social_media_links=True,
     )
 
-    async with AsyncWebCrawler() as crawler:
+    async with AsyncWebCrawler(config=browser_config) as crawler:
         for item in state["search_contents"]:
             url = item["url"]
-            result = await crawler.arun(url=url, config=config)
+            result = await crawler.arun(url=url, config=run_config)
             item["content"] = str(result.markdown)
     return state
 

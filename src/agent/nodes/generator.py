@@ -12,21 +12,20 @@ from src.agent.utils.state import ContentData, WorkflowState
 
 load_dotenv()
 
-llm = ChatOpenAI(model="gpt-4o-mini")
 
-
+# TODO: llm 6번 돌리기 (5번 기사 + 1번 전체 요약 및 틀 다듬기)
 def generator_node(state: WorkflowState):
     class NewsSection(BaseModel):
         """
         A model representing a section of a newsletter, with a 1:1 mapping to an input article.
-        Each NewsSection corresponds to exactly one source article in the input.
+        Consider all articles collectively when creating subheadings or content.
 
         Attributes:
-            subtitle (str): The subtitle or heading derived from the source article.
+            subheading (str): The subheading of the content section
             content (str): The summarized or reformatted content from the source article.
         """
 
-        subtitle: str
+        subheading: str
         content: str
 
     class WriterResponse(BaseModel):
@@ -38,9 +37,8 @@ def generator_node(state: WorkflowState):
 
         Attributes:
             title (str): The main title of the written content.
-            contents (List[NewsSection]): A list of content sections, where each NewsSection
-                                        corresponds to exactly one input article.
-            summary (str): A brief summary of all processed articles.
+            contents (List[NewsSection]): A list of content sections, where each NewsSection corresponds to exactly one input article.
+            summary (str): A brief 3-line summary of all processed documents
         """
 
         title: str
@@ -63,6 +61,7 @@ def generator_node(state: WorkflowState):
             "sources": full_contents,
         }
     )
+    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0.5)
     response = llm.bind_tools([WriterResponse]).invoke(prompt)
     arguments = json.loads(response.additional_kwargs["tool_calls"][0]["function"]["arguments"])
     title = arguments.get("title", [])
@@ -75,7 +74,7 @@ def generator_node(state: WorkflowState):
     # FIXME: 지금은 기사와 그 기사의 요약이 1:1 매칭이라고 가정하고 있음
     for idx, news_section in enumerate(contents):
         full_contents += (
-            f"## [{news_section['subtitle']}]({state['search_contents'][idx]['url']})\n\n"
+            f"## [{news_section['subheading']}]({state['search_contents'][idx]['url']})\n\n"
         )
         if state["search_contents"][idx].get("thumbnail_url"):
             full_contents += f"![]({state['search_contents'][idx].get('thumbnail_url', '')})\n\n"
@@ -156,4 +155,4 @@ if __name__ == "__main__":
     print(result_state["newsletter_content"])
 
     # 결과 파일 저장
-    save_text_to_unique_file(result_state["newsletter_content"], "generator_test", "json")
+    save_text_to_unique_file(result_state["newsletter_content"], "generator_test")

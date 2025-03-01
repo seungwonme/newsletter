@@ -1,6 +1,10 @@
+import asyncio
+import sys
+
 from pycountry import languages
 
 from src.agent.agent import get_graph
+from src.agent.utils.file_utils import save_text_to_unique_file
 from src.agent.utils.state import WorkflowState, initialize_state
 
 
@@ -39,3 +43,25 @@ async def create_newsletter(
         "content": res["newsletter_content"],
     }
     return res_dict
+
+
+async def main():
+    argv = sys.argv
+    if len(argv) <= 2:
+        print(
+            "No arguments provided. Using default values (Topics: economy, Exchange Rates, Sources: BBC, WSJ)"
+        )
+        res = await create_newsletter(
+            ["economy", "Exchange Rates"],
+            ["https://www.bbc.com/", "https://www.wsj.com/"],
+            language_code="ko",
+        )
+    else:
+        res = await create_newsletter([argv[1]], [argv[2]], language_code="ko")
+
+    full_contents = f"# {res['title']}\n\n" + res["content"]
+    save_text_to_unique_file(full_contents, "newsletter")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())

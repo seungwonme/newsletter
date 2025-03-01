@@ -122,8 +122,8 @@ if __name__ == "__main__":
         # Add the HTML content
         message.add_alternative(content, subtype="html")
 
-        message["To"] = "kstobit@naver.com"
-        message["From"] = "news4letter2@gmail.com"
+        message["To"] = "news4Letter2@gmail.com"
+        message["From"] = "senugw0u@gmail.com"
         message["Subject"] = "오늘의 뉴스레터"
 
         # encoded message

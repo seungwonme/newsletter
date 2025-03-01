@@ -1,41 +1,45 @@
-# flake8: noqa
-# pylint: disable=C0413
-from dotenv import load_dotenv
-
-load_dotenv()
-
 import json
 
+from dotenv import load_dotenv
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 from src.agent.utils.file_utils import save_text_to_unique_file
-from src.agent.utils.prompts import CURATOR_PROMPT
+from src.agent.utils.prompts import SUMMARIZER_PROMPT
 from src.agent.utils.state import ContentData, WorkflowState
 
+load_dotenv()
 
-def curator_node(state: WorkflowState):
-    class CuratorResponse(BaseModel):
-        indices: list[int]
 
-    llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
+def summarizer_node(state: WorkflowState):
+    class SummaryResponse(BaseModel):
+        summary: str
 
-    # 평가할 데이터 문자열 생성
-    content_overviews = "\n".join(
-        [
-            f"[{idx}]: {content['title']}\n{content['description']}"
-            for idx, content in enumerate(state["search_contents"])
-        ]
-    )
+    new_search_contents = state["search_contents"]
     topic_str = ", ".join(state["topics"])
-    prompt = CURATOR_PROMPT.invoke({"topics": topic_str, "sources": content_overviews})
-    response = llm.bind_tools([CuratorResponse]).invoke(prompt)
+    llm_with_tools = ChatOpenAI(model="gpt-4o-mini", temperature=0.5).bind_tools([SummaryResponse])
 
-    arguments = json.loads(response.additional_kwargs["tool_calls"][0]["function"]["arguments"])
-    predicted_indices = arguments.get("indices", [])
-    new_search_contents = [state["search_contents"][index] for index in predicted_indices]
+    for idx, item in enumerate(new_search_contents):
+        full_content = f"""
+Title: {item.get('title', '')}
+Content:
+{item.get('content', '')}
+"""
+        prompt = SUMMARIZER_PROMPT.invoke(
+            {
+                "language": state["language"],
+                "topics": topic_str,
+                "article": full_content,
+            }
+        )
+        response = llm_with_tools.invoke(prompt)
+        arguments = json.loads(response.additional_kwargs["tool_calls"][0]["function"]["arguments"])
+        summary = arguments.get("summary")
+        new_search_contents[idx]["content"] = summary
 
-    return {"search_contents": new_search_contents}
+    return {
+        "search_contents": new_search_contents,
+    }
 
 
 if __name__ == "__main__":
@@ -97,27 +101,20 @@ if __name__ == "__main__":
         "newsletter_content": "",
     }
 
-    # curator_node 실행
-    result_state = curator_node(test_state)
+    # generator_node 실행
+    result_state = summarizer_node(test_state)
 
     # 결과 출력
-    print("\nCurated Contents:")
+    print("\nSummarized Contents:")
     print("-" * 80)
-
-    full_content = ""
-    for content in result_state["search_contents"]:
-        # 콘솔 출력
-        print(f"Title: {content.get('title')}")
-        print(f"Date: {content.get('date')}")
-        print(f"URL: {content.get('url')}")
-        print("-" * 40)
-
-        # 파일 저장용 포맷팅
-        full_content += f"# {content.get('title')}\n\n"
-        full_content += f"[Article URL]({content.get('url')})\n\n"
-        full_content += f"![Thumbnail]({content.get('thumbnail_url')})\n\n"
-        full_content += f"Description: {content.get('description')}\n\n"
-        full_content += "---\n\n"
+    full_contents = ""
+    for item in result_state["search_contents"]:
+        full_contents += f"""
+Title: {item.get('title', '')}
+Content:
+{item.get('content', '')}
+"""
+    print(full_contents)
 
     # 결과 파일 저장
-    save_text_to_unique_file(full_content, file_name="curator_test")
+    save_text_to_unique_file(full_contents, "summarizer_test")
